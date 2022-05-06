@@ -19,10 +19,18 @@ function reactive(target){
 
 
 let activeEffect = null
-function effect(fn) {
-    activeEffect = fn;
-    activeEffect();
+function effect(fn, {computed = false } = {}) { //computedが渡ってこなかった ⇒ False, そもそも第二引数の設定自体が無かった⇒{}
+    try {
+        activeEffect = fn;
+        activeEffect.computed = computed;
+        if(computed) {
+            activeEffect.dirty = true;
+        }
+        activeEffect();
+        return activeEffect;    
+    } finally {
     activeEffect = null;
+    }
 }
 
 const targetMap = new WeakMap();
@@ -33,12 +41,12 @@ function track(target, key) {
     let depsMap = targetMap.get(target); 
     
     if(!depsMap){
-        targetMap.set(target, (depsMap = new Map())); //文字列(プロパティ名)とコールバック関数の依存関係を保持。 weakmapはオブジェクトのみなので使えない。
+        targetMap.set(target, (depsMap = new Map()));
     }
 
     let deps = depsMap.get(key);
     if(!deps) {
-        depsMap.set(key, deps = new Set()); //プロパティ名とコールバック関数の関係を保持
+        depsMap.set(key, deps = new Set()); 
     }
     if(!deps.has(activeEffect)){
         console.log('%c[effect:register]', 'background: blue; color: white;', target, key, activeEffect);
@@ -55,6 +63,30 @@ function trigger(target, key) {
     if(!deps){
         return;
     }
-    deps.forEach(effect => effect());
+    deps.forEach(effect => {
+        if(effect.computed) {
+            effect.dirty = true;
+        } else {
+            effect();
+        }
+    });
 }
-export { effect, trigger, reactive };
+
+function computed(getter) {
+    let computed, value;
+    const runner = effect(getter, { computed : true });
+
+    computed = {
+        get value() {
+            if(runner.dirty) {
+                value = runner();
+                runner.dirty = false;
+                console.log('%c[computed:refresh]', 'background: purple; color: white;', value);
+            }
+            return value;
+        }
+    }
+
+    return computed;
+}
+export { effect, trigger, reactive, computed };
