@@ -19,7 +19,7 @@ function reactive(target){
 
 
 let activeEffect = null
-function effect(fn, {computed = false } = {}) { //computedが渡ってこなかった ⇒ False, そもそも第二引数の設定自体が無かった⇒{}
+function effect(fn, {computed = false } = {}) {
     try {
         activeEffect = fn;
         activeEffect.computed = computed;

@@ -1,14 +1,76 @@
-<script type="module">
-    import { effect, reactive, computed } from './reactive.js';
-    const obj1 = reactive({
-        a: 0,
-    });
-   
-    const computedValue = computed(() => {
-        return obj1.a + 10;
-    });
+<!DOCTYPE html>
+<html>
 
-    obj1.a = 1;
-    console.log(computedValue.value);
-    console.log(computedValue.value);
-</script>
+<body>
+    <button id="inc">Push Me</button>
+    <script>
+      const nodeOps = {
+        qs(selector, scope) {
+          return (scope || document).querySelector(selector);
+        },
+        create(type) {
+          return document.createElement(type);
+        },
+        setAttr(target, key, value) {
+          target.setAttribute(key, value);
+        },
+        append(parent, target) {
+          parent.appendChild(target);
+        },
+        html(target, value) {
+          target.innerHTML = value;
+        },
+        on(target, eventType, callback) {
+          target.addEventListener(eventType, () => {
+            callback();
+          });
+        }
+      }
+      let i = 0;
+
+      // querySelector
+      const body = nodeOps.qs("body");
+      const button = nodeOps.qs("#inc", body);
+
+      // createElement
+      const div = nodeOps.create("div");
+
+      // setAttribute
+      nodeOps.setAttr(div, "class", "green");
+      
+      // appendChild
+      nodeOps.append(body, div);
+
+      // innerHTML
+      nodeOps.html(div, i);
+
+      // addEventListner
+      nodeOps.on(button, "click", () => {
+        nodeOps.html(div, ++i);
+      });
+
+    </script>
+    <style>
+        .green {
+            color: green;
+            font-weight: 600;
+        }
+    </style>
+</body>
+</html>
+
+<!-- Reactive & Computed
+    <script type="module">
+        import { effect, reactive, computed } from './reactive.js';
+        const obj1 = reactive({
+            a: 0,
+        });
+       
+        const computedValue = computed(() => {
+            return obj1.a + 10;
+        });
+        obj1.a = 1;
+        console.log(computedValue.value);
+        console.log(computedValue.value);
+    </script> -->
+    
