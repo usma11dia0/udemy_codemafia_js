@@ -15,6 +15,22 @@ function patch(n1, n2, container) {
         el = nodeOps.create(n2.type);
         nodeOps.append(container, el);
     }
+
+    for(const key in n2.props){
+        const prevProp = n1.props[key];
+        const nextProp = n2.props[key];
+
+        if(prevProp !== nextProp){
+            if(key.startsWith("on")) {
+                console.log(key.substring(2).toLowerCase());
+                nodeOps.on(el, key.substring(2).toLowerCase(), ()=>{
+                    nextProp();
+                })
+            }
+            nodeOps.setAttr(el, key, nextProp);
+        }
+    }
+
     if(n1.children !== n2.children){
         nodeOps.html(el, n2.children);
     }
