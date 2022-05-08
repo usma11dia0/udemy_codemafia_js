@@ -10,10 +10,14 @@
 
     const container = nodeOps.qs('#app');
     const prevVNode = createVNode();
-    const nextVNode = createVNode('div', {class: 'green', onClick: () => {
-      console.log('hello');
-    }}, 'hello');
-    patch(prevVNode, nextVNode, container)
+    const nextVNode1 = createVNode('div', {class: 'green'},[
+      createVNode('div', {class: 'green'},'hello')
+    ]);
+    const nextVNode2 = createVNode('div', {class: 'green'},[
+      createVNode('div', {class: 'green'},'bye')
+    ]);
+    patch(prevVNode, nextVNode1, container);
+    patch(nextVNode1, nextVNode2, container);
   </script>
   <style>
     .green {
