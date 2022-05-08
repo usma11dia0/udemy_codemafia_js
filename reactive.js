@@ -72,9 +72,9 @@ function trigger(target, key) {
     });
 }
 
-function computed(getter) {
+function computed(getter, ctx) {
     let computed, value;
-    const runner = effect(getter, { computed : true });
+    const runner = effect(getter.bind(ctx), { computed : true });
 
     computed = {
         get value() {

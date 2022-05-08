@@ -19,21 +19,34 @@
           a: 8,
           b: 7
         }),
+        computed: {
+          sum() {
+            return this.a + this.b;
+          },
+        },
+        methods: {
+          increment(key) {
+            this[key]++;
+          },
+          decrement(key) {
+            this[key]--;
+          }
+        },
         render() {
           return h('div', { class: 'container' }, [
             h('div', { class: 'num' }, [
-              h('button', { class: 'btn' }, '+'),
-              h('div', { class: 'label' }, this.data.a),
-              h('button', { class: 'btn' }, '-'),
+              h('button', { class: 'btn', onClick: () => this.increment('a') }, '+'),
+              h('div', { class: 'label' }, this.a),
+              h('button', { class: 'btn', onClick: () => this.decrement('a') }, '-'),
             ]),
             h('div', { class: 'num' }, '+'),
             h('div', { class: 'num' }, [
-              h('button', { class: 'btn' }, '+'),
-              h('div', { class: 'label' }, this.data.b),
-              h('button', { class: 'btn' }, '-'),
+              h('button', { class: 'btn',  onClick: () => this.increment('b') }, '+'),
+              h('div', { class: 'label' }, this.b),
+              h('button', { class: 'btn', onClick: () => this.decrement('b') }, '-'),
             ]),
             h('div', { class: 'num' }, '='),
-            h('div', { class: 'result' }, 15)
+            h('div', { class: 'result' }, this.sum)
           ]);
         }
       }).mount('#app');
