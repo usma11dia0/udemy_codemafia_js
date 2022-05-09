@@ -8,37 +8,20 @@ function createApp(args) {
     const app = {};
 
     const rawData = data();
-    const ctx = { ...rawData, ...computedData, ...methods };
 
-    app.publicCtx = new Proxy(ctx, {
-        get(target, key, receiver) {
-            if(rawData.hasOwnProperty(key)) {
-                return app.data[key];
-            } else if(computedData.hasOwnProperty(key)) {
-                return app.computed[key].value;
-            } else {
-                return Reflect.get(target, key, receiver)
-            }
-        },
-        set(target, key ,value ,receiver) {
-            if(rawData.hasOwnProperty(key)) {
-                const res = app.data[key] = value;
-                return res;
-            }
-        }
-    })
-
-    app.methods = methods;
+    app.publicCtx = createPublicCtx(app, rawData, computedData, methods);
 
     app.data = reactive(rawData);
 
-    app.computed = {};
-    for(const prop in computedData) {
-        const c = computed(computedData[prop], app.publicCtx);
-        app.computed[prop] = c;
-    }
+    app.computed = createComputedData(app, computedData);
 
-    app.mount = function(selector){
+    app.mount = createMountFn(app, render);
+
+    return app;
+}
+
+function createMountFn(app, render){
+    return function(selector){
         const container = nodeOps.qs(selector);
         app.vnode = createVNode();
         effect(() => {
@@ -46,9 +29,39 @@ function createApp(args) {
             console.log('%c[patch]', 'background: orange; color: white;', app.vnode, nextVNode);
             patch(app.vnode, nextVNode , container);
             app.vnode = nextVNode;
-        }, )
+        },{ lazy: true } )
     };
-    return app;
 }
 
+function createComputedData({ publicCtx }, computedData){
+    const res = {};
+    for(const prop in computedData) {
+        const c = computed(computedData[prop], publicCtx);
+        res[prop] = c;
+    }
+    return res;
+}
+
+function createPublicCtx(app, rawData, computedData, methods) {
+    const ctx = { ...rawData, ...computedData, ...methods };
+
+    return new Proxy(ctx, {
+        get(target, key, receiver) {
+            if(rawData.hasOwnProperty(key)) {
+                return Reflect.get(app.data, key);
+            } else if(computedData.hasOwnProperty(key)) {
+                return Reflect.get(app.computed, key).value;
+            } else {
+                return Reflect.get(target, key, receiver)
+            }
+        },
+        set(target, key ,value ,receiver) {
+            if(rawData.hasOwnProperty(key)) {
+                return Reflect.set(app.data, key, value);
+            }
+        }
+    })
+}
+
+export { nextTick } from './scheduler.js';
 export { createApp, createVNode as h };
